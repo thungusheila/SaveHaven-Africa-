@@ -1,45 +1,28 @@
-from flask import Blueprint, request, jsonify
-from models import Report
+import os
+from flask import Flask
+from flask_cors import CORS
 from database import db
-from utils import compute_hotspots
+from models import Report  # ensure model is imported
+from routes import bp as api_bp
+from dotenv import load_dotenv
 
-bp = Blueprint("api", __name__, url_prefix="/api")
+load_dotenv()
 
-@bp.route("/health", methods=["GET"])
-def health():
-    return jsonify({"ok": True})
+def create_app():
+    app = Flask(__name__)
+    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///safehaven.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "change-me")
 
-@bp.route("/reports", methods=["POST"])
-def create_report():
-    data = request.get_json() or {}
-    category = data.get("category")
-    description = data.get("description")
-    location = data.get("location") or {}
-    lat = location.get("lat") or data.get("lat")
-    lng = location.get("lng") or data.get("lng")
-    if not category or not description or lat is None or lng is None:
-        return jsonify({"error": "Missing required fields"}), 400
-    rpt = Report(
-        category=category,
-        description=description,
-        lat=float(lat),
-        lng=float(lng),
-        address=location.get("address") or data.get("address"),
-        anonymous=bool(data.get("anonymous", True)),
-        contact=data.get("contact")
-    )
-    db.session.add(rpt)
-    db.session.commit()
-    return jsonify(rpt.to_dict()), 201
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
 
-@bp.route("/reports", methods=["GET"])
-def list_reports():
-    limit = min(int(request.args.get("limit", 50)), 500)
-    reports = Report.query.order_by(Report.created_at.desc()).limit(limit).all()
-    return jsonify([r.to_dict() for r in reports])
+    CORS(app, resources={r"/api/*": {"origins": os.getenv("CORS_ORIGINS", "*")}})
+    app.register_blueprint(api_bp)
+    return app
 
-@bp.route("/stats/hotspots", methods=["GET"])
-def hotspots():
-    precision = min(max(int(request.args.get("precision", 2)), 0), 6)
-    data = compute_hotspots(precision=precision, limit=100)
-    return jsonify(data)
+if __name__ == "__main__":
+    app = create_app()
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
