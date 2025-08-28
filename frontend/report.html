@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Report — SafeHaven Africa</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Submit an Incident Report</h1>
+    <form id="reportForm" class="card">
+      <label>Category
+        <select id="category">
+          <option value="banditry">Banditry</option>
+          <option value="kidnapping">Kidnapping</option>
+          <option value="robbery">Robbery</option>
+          <option value="suspicious">Suspicious</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+
+      <label>Description
+        <textarea id="description" rows="5" required></textarea>
+      </label>
+
+      <label>Latitude
+        <input id="lat" type="number" step="any" required />
+      </label>
+
+      <label>Longitude
+        <input id="lng" type="number" step="any" required />
+      </label>
+
+      <label>Address (optional)
+        <input id="address" />
+      </label>
+
+      <label><input id="anonymous" type="checkbox" checked/> Submit anonymously</label>
+
+      <button id="submitBtn" type="submit" class="btn">Submit Report</button>
+      <div id="msg"></div>
+    </form>
+    <p><a href="index.html">Back home</a></p>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    // Attach form handler
+    document.getElementById('reportForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        category: document.getElementById('category').value,
+        description: document.getElementById('description').value,
+        location: { lat: Number(document.getElementById('lat').value), lng: Number(document.getElementById('lng').value), address: document.getElementById('address').value },
+        anonymous: document.getElementById('anonymous').checked
+      };
+      try {
+        await submitReport(payload);
+        document.getElementById('msg').innerText = 'Report submitted. Thank you.';
+        document.getElementById('reportForm').reset();
+      } catch (err) {
+        document.getElementById('msg').innerText = 'Failed to submit: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
