@@ -1,0 +1,61 @@
+<!DOCTYPE html>  
+<html>  
+<head>  
+  <title>SaveHaven Hedera Demo</title>  
+  <script>  
+    async function post(path, body) {  
+      const res = await fetch(path, {  
+        method: "POST",  
+        headers: {"Content-Type":"application/json"},  
+        body: JSON.stringify(body)  
+      });  
+      return res.json();  
+    }  
+
+    async function createToken() {  
+      const res = await post("/create_token", {  
+        name: "AidToken",  
+        symbol: "AID",  
+        initial_supply: 10000  
+      });  
+      document.getElementById("tokenId").innerText = res.tokenId;  
+    }  
+
+    async function mintToken() {  
+      const tokenId = document.getElementById("tokenId").innerText;  
+      const res = await post("/mint_token", { tokenId, amount: 100 });  
+      alert("Mint status: " + res.status);  
+    }  
+
+    async function createTopic() {  
+      const res = await post("/create_topic", {});  
+      document.getElementById("topicId").innerText = res.topicId;  
+    }  
+
+    async function logEvent() {  
+      const topicId = document.getElementById("topicId").innerText;  
+      const message = document.getElementById("eventMsg").value;  
+      const res = await post("/log_event", { topicId, message });  
+      alert("Log status: " + res.status);  
+    }  
+  </script>  
+</head>  
+<body>  
+  <h1>SaveHaven Hedera Demo</h1>  
+
+  <section>  
+    <h2>HTS Token</h2>  
+    <button onclick="createToken()">Create AidToken</button>  
+    <p>Token ID: <span id="tokenId">—</span></p>  
+    <button onclick="mintToken()">Mint 100 AID</button>  
+  </section>  
+
+  <section>  
+    <h2>HCS Audit Trail</h2>  
+    <button onclick="createTopic()">Create Topic</button>  
+    <p>Topic ID: <span id="topicId">—</span></p>  
+    <input id="eventMsg" placeholder="Enter log message" />  
+    <button onclick="logEvent()">Log Event</button>  
+  </section>  
+</body>  
+</html>
