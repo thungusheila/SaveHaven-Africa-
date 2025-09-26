@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: savehaven-backend
+    env: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: flask run --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: FLASK_APP
+        value: app.py
+      - key: FLASK_ENV
+        value: production
+      - key: HEDERA_NETWORK
+        value: testnet
+      - key: OPERATOR_ID
+        value: 0.0.6845136
+      - key: OPERATOR_KEY
+        value: 0a25d931e424f2735671a3a5dace8cda2b52c76df177fb274f8a9022dcb2c75e
+    autoDeploy: true
