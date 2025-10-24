@@ -1,4 +1,4 @@
-from hedera import TokenCreateTransaction, TokenMintTransaction  
+from hedera_sdk_python import TokenCreateTransaction, TokenMintTransaction
 from hedera_client import client  
 
 def create_token(name, symbol, initial_supply):  
